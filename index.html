@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中企云链 - 2024年度全景数据报告</title>
+    <title>Cloudchain招股书数据集</title>
     
     <!-- 1. 基础样式与字体 -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -154,10 +154,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-gray-800 pb-6 pointer-events-none">
             <div>
                 <h1 class="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4">
-                    市场规模 <span class="text-[#00e676]">50万亿</span>
+                    市场天花板 <span class="text-[#00e676]">50万亿</span>
                 </h1>
                 <p class="text-gray-400 text-lg max-w-2xl leading-relaxed">
-                    中国供应链金融市场资金规模构成概览。
                     <br>每一枚硬币代表 <span class="text-white font-bold border-b border-white pb-0.5">1万亿 (1 Trillion)</span> 市场规模。
                 </p>
             </div>
@@ -165,15 +164,15 @@
             <div class="flex flex-col gap-3 mt-6 md:mt-0">
                 <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full border border-gray-500 bg-[#222]"></div>
-                    <div class="text-sm text-gray-400 font-bold uppercase tracking-wider">票据 40T</div>
+                    <div class="text-sm text-gray-400 font-bold uppercase tracking-wider">票据 40万亿</div>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full border border-[#0ea5e9] bg-[#0ea5e9]/20 shadow-[0_0_5px_#0ea5e9]"></div>
-                    <div class="text-sm text-[#0ea5e9] font-bold uppercase tracking-wider">信用证 10T</div>
+                    <div class="text-sm text-[#0ea5e9] font-bold uppercase tracking-wider">信用证 5万亿</div>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full border border-[#00e676] bg-[#00e676]/20 shadow-[0_0_5px_#00e676]"></div>
-                    <div class="text-sm text-[#00e676] font-bold uppercase tracking-wider">云信 10T</div>
+                    <div class="text-sm text-[#00e676] font-bold uppercase tracking-wider">云信 5万亿</div>
                 </div>
             </div>
         </div>
@@ -199,16 +198,16 @@
     
     <!-- 业务数据 -->
     <section id="section-business" class="mb-24 pt-8 border-t border-gray-900 interactive-section group">
-        <h2 class="text-3xl font-black text-white mb-12 tracking-tight pointer-events-none">年度平台业务数据概览</h2>
+        <h2 class="text-3xl font-black text-white mb-12 tracking-tight pointer-events-none">云信确权数据概览</h2>
         <div class="grid grid-cols-[1fr_120px_1fr] md:grid-cols-[1fr_160px_1fr] gap-4 mb-4 text-sm font-bold text-gray-400 uppercase tracking-widest pointer-events-none">
             <div class="text-right flex flex-col items-end">
                 <span>确权金额 (万元)</span>
-                <span class="text-[10px] opacity-50">CONFIRMED AMOUNT (10k CNY)</span>
+                <span class="text-[10px] opacity-50">Authentication AMOUNT (10k CNY)</span>
             </div>
             <div class="text-center self-end pb-1">年份 (Year)</div>
             <div class="text-left flex flex-col items-start">
                 <span>确权笔数</span>
-                <span class="text-[10px] opacity-50">TRANSACTION COUNT</span>
+                <span class="text-[10px] opacity-50">Autentication COUNT</span>
             </div>
         </div>
         <div id="business-chart-container" class="space-y-4 font-mono text-sm md:text-base min-h-[200px]"></div>
@@ -220,8 +219,8 @@
     <!-- 行业增长趋势 -->
     <section id="section-industry" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
         <div class="mb-8 pointer-events-none">
-            <h3 class="text-3xl font-black text-white tracking-tight">行业增长趋势</h3>
-            <p class="text-gray-500 text-sm">各行业上线企业数量年度走势</p>
+            <h3 class="text-3xl font-black text-white tracking-tight">行业分布</h3>
+            <p class="text-gray-500 text-sm">各行业客户数量</p>
         </div> 
         <div id="line-chart-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 min-h-[300px]"></div>
     </section>
@@ -229,15 +228,15 @@
     <!-- 行业收入结构 -->
     <section id="section-revenue-share" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
         <div class="mb-10 pointer-events-none">
-            <h3 class="text-xl font-bold text-gray-500 uppercase tracking-widest mb-2">行业收入结构 (REVENUE SHARE)</h3>
-            <p class="text-gray-400 text-sm">按收入占比统计，展示各行业对总收入的贡献度。</p>
+            <h3 class="text-xl font-bold text-gray-500 uppercase tracking-widest mb-2">行业集中度(REVENUE)</h3>
+            <p class="text-gray-400 text-sm">按收入占比统计</p>
         </div>
         <div class="hidden md:grid grid-cols-6 gap-4 mb-10 text-sm font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-4 text-center pointer-events-none">
             <div class="text-left">Year</div>
             <div>建筑业</div>
             <div>制造业</div>
-            <div>批发零售</div>
-            <div>租赁商务</div>
+            <div>批发及零售</div>
+            <div>租赁及商务</div>
             <div>其他</div>
         </div>
         <div id="revenue-waffle-container" class="space-y-12 md:space-y-8 min-h-[200px]"></div>
@@ -247,9 +246,8 @@
     <section id="section-personnel" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 pointer-events-none">
             <div>
-                <h3 class="text-3xl font-black text-white tracking-tight mb-2">人员结构分布</h3>
-                <p class="text-gray-500 text-sm max-w-lg">
-                    上方显示<span class="text-white font-bold">员工总数</span>，下方显示<span class="text-[#00e676] font-bold">销售及营销人员</span>。
+                <h3 class="text-3xl font-black text-white tracking-tight mb-2">员工构成</h3>
+                <p class="text-white text-sm max-w-lg">
                     每一个点代表约 50 名员工。
                 </p>
             </div>
@@ -266,15 +264,15 @@
                 <div class="w-full h-px bg-gray-700"></div>
             </div>
             <div id="personnel-chart" class="relative z-10 grid grid-cols-3 gap-16 md:gap-32 h-full items-center"></div>
-            <div class="absolute top-4 left-0 text-white font-bold text-sm pointer-events-none">TOTAL EMPLOYEES</div>
-            <div class="absolute bottom-4 left-0 text-[#00e676] font-bold text-sm pointer-events-none">SALES STAFF</div>
+            <div class="absolute top-4 left-0 text-white font-bold text-sm pointer-events-none">总人数</div>
+            <div class="absolute bottom-4 left-0 text-[#00e676] font-bold text-sm pointer-events-none">销售人员</div>
         </div>
     </section>
 
     <!-- 企业性质分布 -->
     <section id="section-ownership" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
         <div class="mb-8 pointer-events-none">
-            <h3 class="text-3xl font-black text-white tracking-tight">企业性质结构</h3>
+            <h3 class="text-3xl font-black text-white tracking-tight">企业类型</h3>
         </div>
         <div class="hidden md:grid grid-cols-5 gap-8 mb-10 text-base font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-4 pointer-events-none">
             <div class="col-span-1">Year</div>
@@ -289,28 +287,28 @@
     <!-- 市场竞争格局 -->
     <section id="section-competition" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
         <div class="mb-10 pointer-events-none">
-            <h3 class="text-3xl font-black text-white tracking-tight mb-2">市场竞争格局</h3>
+            <h3 class="text-3xl font-black text-white tracking-tight mb-2">市场排名</h3>
             <p class="text-gray-500 text-sm">
-                Top 5 独立数字应收账款确权平台排名。
-                <span class="text-white font-bold px-1">白色条形</span>代表确权额市占率，
-                <span class="text-[#00e676] font-bold px-1">绿色条形</span>代表融资额市占率。
+                <span class="text-white font-bold px-1">Top 5 独立数字应收账款确权平台排名</span>
+                <span class="text-white font-bold px-1">白色条形代表确权额市占率</span>
+                <span class="text-[#00e676] font-bold px-1">绿色条形代表融资额市占率</span>
             </p>
         </div>
         <div id="market-rank-container" class="flex flex-col gap-6 min-h-[400px]"></div>
-        <div class="text-right text-xs text-gray-600 mt-4 pointer-events-none">单位：10亿元 (CNY Billion)</div>
+        <div class="text-right text-xs text-white mt-4 pointer-events-none">单位：10亿元 (CNY Billion)</div>
     </section>
 
     <!-- 关键财务指标 -->
     <section id="section-financial" class="mb-20 pt-8 border-t border-gray-900 interactive-section group">
         <div class="mb-10 pointer-events-none">
-            <h3 class="text-3xl font-black text-white tracking-tight mb-2">关键财务指标表现</h3>
-            <p class="text-gray-500 text-sm">2022 - 2024 三年趋势对比</p>
+            <h3 class="text-3xl font-black text-white tracking-tight mb-2">财务指标</h3>
+            <p class="text-gray-500 text-sm">2022 - 2024</p>
         </div>
         <div id="financial-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-[200px]"></div>
     </section>
 
     <footer class="mt-20 pt-10 border-t border-gray-800 text-gray-500 text-sm flex justify-between pb-12 px-4">
-        <p>数据来源：中企云链股份公司信息系统专项核查报告 (2022-2025)</p>
+        <p>数据来源：招股书公开信息</p>
         <p>2025年数据统计截至6月30日</p>
     </footer>
 
@@ -324,8 +322,8 @@
             container.innerHTML = ''; // Clear
             const marketData = [
                 { type: 'bill', count: 40, label: '票据' }, 
-                { type: 'yunxin', count: 10, label: '云信' },
-                { type: 'lc', count: 10, label: '信用证' }
+                { type: 'yunxin', count: 5, label: '云信' },
+                { type: 'lc', count: 5, label: '信用证' }
             ];
             let coinHtml = '';
             let globalIndex = 0;
@@ -655,7 +653,7 @@
                     <AnimatedNumber value={number} duration={2} />
                 </div>
                 <div className="mt-2">
-                    <span className="bg-[#1d6a64] text-white text-lg md:text-xl font-bold px-3 py-1 leading-normal shadow-lg rounded-md border border-[#2d8a84]/50">{bottomText}</span>
+                    <span className="bg-[#1d6a64] text-white text-lg md:text-xl font-bold px-8 py-1 leading-normal shadow-lg rounded-md border border-[#2d8a84]/50">{bottomText}</span>
                 </div>
             </div>
         );
@@ -663,8 +661,8 @@
         // ... (Map & Supply Chain Components remain mostly same logic, but wrapped) ...
         const MAP_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/f/fe/China_blank_province_map.svg";
         const TIMELINE_DATA = [
-            { year: 2020, currentAmount: 1500, totalAmount: 2476, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }] },
-            { year: 2021, currentAmount: 2500, totalAmount: 4976, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }] },
+            { year: 2020, currentAmount: 1301, totalAmount: 2492, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }] },
+            { year: 2021, currentAmount: 2484, totalAmount: 4976, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }] },
             { year: 2022, currentAmount: 3555, totalAmount: 8531, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }, { x: 520, y: 480 }, { x: 680, y: 470 }, { x: 820, y: 470 }, { x: 740, y: 300 }, { x: 570, y: 490 }, { x: 790, y: 450 }] },
             { year: 2023, currentAmount: 5170, totalAmount: 13701, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }, { x: 520, y: 480 }, { x: 680, y: 470 }, { x: 820, y: 470 }, { x: 740, y: 300 }, { x: 570, y: 490 }, { x: 790, y: 450 }, { x: 580, y: 420 }, { x: 680, y: 400 }, { x: 660, y: 530 }, { x: 760, y: 360 }, { x: 830, y: 240 }, { x: 750, y: 460 }, { x: 800, y: 540 }, { x: 460, y: 560 }, { x: 710, y: 330 }] },
             { year: 2024, currentAmount: 6161, totalAmount: 19861, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }, { x: 520, y: 480 }, { x: 680, y: 470 }, { x: 820, y: 470 }, { x: 740, y: 300 }, { x: 570, y: 490 }, { x: 790, y: 450 }, { x: 580, y: 420 }, { x: 680, y: 400 }, { x: 660, y: 530 }, { x: 760, y: 360 }, { x: 830, y: 240 }, { x: 750, y: 460 }, { x: 800, y: 540 }, { x: 460, y: 560 }, { x: 710, y: 330 }, { x: 870, y: 180 }, { x: 850, y: 210 }, { x: 680, y: 350 }, { x: 650, y: 310 }, { x: 480, y: 390 }, { x: 430, y: 400 }, { x: 520, y: 360 }, { x: 550, y: 520 }, { x: 610, y: 600 }, { x: 780, y: 570 }, { x: 730, y: 510 }, { x: 630, y: 650 }, { x: 220, y: 220 }, { x: 280, y: 480 }] }
@@ -728,8 +726,8 @@
             return (
                 <div ref={containerRef} className="w-full h-[500px] flex flex-col items-center justify-center relative">
                     <div className="text-center mb-8 max-w-2xl px-4 pointer-events-none">
-                        <h2 className="text-white text-2xl font-bold mb-2">信用穿透力：从 1 到 129</h2>
-                        <p className="text-white/80 text-sm">单笔确权穿透 <strong className="text-white">7级</strong>，覆盖 <strong className="text-white">129家</strong>。</p>
+                        <h2 className="text-white text-2xl font-bold mb-2">超级获客</h2>
+                        <p className="text-white/80 text-sm">单笔确权穿透 <strong className="text-white">7级</strong>，获客 <strong className="text-white">129家</strong>。</p>
                     </div>
                     <div className="relative w-full max-w-6xl h-full overflow-visible">
                         <svg viewBox="0 0 1000 600" className="w-full h-full" style={{ overflow: 'visible' }}>
@@ -838,7 +836,7 @@
         }
 
         const SummarySection = () => {
-             const headerStats = [ { id: 1, topText: "2024年服务", number: 6601, bottomText: "核心企业" }, { id: 2, topText: "平台累计拥有", number: 556588, bottomText: "注册用户" }, { id: 3, topText: "以及链接了", number: 3574, bottomText: "合作银行" } ];
+             const headerStats = [ { id: 1, number: 6601, bottomText: "核心企业" }, { id: 2, number: 556588, bottomText: "平台用户" }, { id: 3, number: 3574, bottomText: "合作银行" } ];
             return (
                 <div id="section-platform" className="w-full py-10 border-t border-gray-800">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -852,7 +850,7 @@
                         
                         <div className="space-y-8">
                             <RefreshWrapper title="点击重播">
-                                <h3 className="text-white text-center font-bold mb-2">业务增长地图</h3>
+                                <h3 className="text-white text-center font-bold mb-2">覆盖全国330城市</h3>
                                 <MapVisualization />
                             </RefreshWrapper>
                         </div>
