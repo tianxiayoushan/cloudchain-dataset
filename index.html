@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中企云链 - 2024年度全景数据报告</title>
+    
+    <!-- 1. 基础样式与字体 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- 2. 图表库依赖 (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- 3. React 生态依赖 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0?dev",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?dev",
+            "framer-motion": "https://esm.sh/framer-motion@10.16.4?external=react,react-dom&dev",
+            "d3": "https://esm.sh/d3@7.8.5?dev"
+        }
+    }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#1e293b', 900: '#111111', 950: '#020617' }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #111111;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --dot-green: #00e676;
+            --coin-bill: #333333;
+            --coin-lc: #0ea5e9;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* === 交互提示 === */
+        .interactive-section {
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.3s ease;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: -1rem; /* 抵消 padding */
+        }
+        .interactive-section:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        .interactive-section:active {
+            transform: scale(0.995);
+        }
+
+        /* === 市场规模硬币图动画 === */
+        .coin-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .market-coin {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(-20px) scale(0.8);
+            animation: dropCoin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            border: 2px solid transparent;
+        }
+        .coin-bill { background-color: #222; border-color: #666; color: #888; }
+        .coin-lc { background-color: rgba(14, 165, 233, 0.2); border-color: #0ea5e9; color: #0ea5e9; box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+        .coin-yunxin { background-color: rgba(0, 230, 118, 0.2); border-color: #00e676; color: #00e676; box-shadow: 0 0 15px rgba(0, 230, 118, 0.4); z-index: 10; }
+
+        @keyframes dropCoin { to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* === 地图滤镜 === */
+        .map-filter { filter: invert(1) opacity(0.6) brightness(1.5) contrast(1.2); }
+
+        /* === 华夫饼图样式 === */
+        .waffle-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; width: 80px; height: 80px; }
+        .waffle-cell { width: 100%; height: 100%; background-color: #333; border-radius: 1px; }
+        .waffle-cell.filled { background-color: #fff; box-shadow: 0 0 2px rgba(255,255,255,0.5); transform: scale(0); opacity: 0; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { to { transform: scale(1); opacity: 1; } }
+
+        /* === 财务指标小柱子动画 === */
+        .trend-bar { transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        /* === 排行榜条形图动画 === */
+        .bar-animate-target { transform-origin: left; }
+
+        /* === 人员点阵图样式 === */
+        .dot-column { display: flex; flex-direction: column-reverse; align-items: center; width: 40px; gap: 2px; }
+        .dot-column.downwards { flex-direction: column; }
+        .person-dot { width: 4px; height: 4px; border-radius: 50%; background-color: #fff; opacity: 0; animation: fadeInDot 0.6s ease-out forwards; }
+        .person-dot.green { background-color: var(--dot-green); box-shadow: 0 0 4px rgba(0, 230, 118, 0.4); }
+        @keyframes fadeInDot { from { opacity: 0; transform: scale(0) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        @media (max-width: 768px) {
+            .coin-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+            .waffle-row-revenue { display: flex !important; flex-direction: column; }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 max-w-[1600px] mx-auto pb-32">
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1: 市场规模 (Vanilla JS) -->
+    <!-- ================================================================= -->
+    <section id="section-macro" class="mb-24 mt-8 interactive-section group" title="点击重播动画">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 border-b border-gray-800 pb-6 pointer-events-none">
+            <div>
+                <h1 class="text-4xl md:text-6xl font-black text-white tracking-tighter mb-4">
+                    市场规模 <span class="text-[#00e676]">50万亿</span>
+                </h1>
+                <p class="text-gray-400 text-lg max-w-2xl leading-relaxed">
+                    中国供应链金融市场资金规模构成概览。
+                    <br>每一枚硬币代表 <span class="text-white font-bold border-b border-white pb-0.5">1万亿 (1 Trillion)</span> 市场规模。
+                </p>
+            </div>
+            
+            <div class="flex flex-col gap-3 mt-6 md:mt-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full border border-gray-500 bg-[#222]"></div>
+                    <div class="text-sm text-gray-400 font-bold uppercase tracking-wider">票据 40T</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full border border-[#0ea5e9] bg-[#0ea5e9]/20 shadow-[0_0_5px_#0ea5e9]"></div>
+                    <div class="text-sm text-[#0ea5e9] font-bold uppercase tracking-wider">信用证 10T</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full border border-[#00e676] bg-[#00e676]/20 shadow-[0_0_5px_#00e676]"></div>
+                    <div class="text-sm text-[#00e676] font-bold uppercase tracking-wider">云信 10T</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative w-full flex justify-center py-8">
+            <!-- 初始清空，等待滚动触发 -->
+            <div id="market-coin-container" class="coin-grid"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[12rem] font-black text-white opacity-[0.02] pointer-events-none select-none z-0">¥</div>
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <span class="bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur border border-white/20">点击刷新</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2: React 动态交互区域 (Map, Supply Chain, Bubbles) -->
+    <!-- ================================================================= -->
+    <div id="react-root" class="mb-32"></div>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3: 业务数据与趋势 (Vanilla JS + Chart.js) -->
+    <!-- ================================================================= -->
+    
+    <!-- 业务数据 -->
+    <section id="section-business" class="mb-24 pt-8 border-t border-gray-900 interactive-section group">
+        <h2 class="text-3xl font-black text-white mb-12 tracking-tight pointer-events-none">年度平台业务数据概览</h2>
+        <div class="grid grid-cols-[1fr_120px_1fr] md:grid-cols-[1fr_160px_1fr] gap-4 mb-4 text-sm font-bold text-gray-400 uppercase tracking-widest pointer-events-none">
+            <div class="text-right flex flex-col items-end">
+                <span>确权金额 (万元)</span>
+                <span class="text-[10px] opacity-50">CONFIRMED AMOUNT (10k CNY)</span>
+            </div>
+            <div class="text-center self-end pb-1">年份 (Year)</div>
+            <div class="text-left flex flex-col items-start">
+                <span>确权笔数</span>
+                <span class="text-[10px] opacity-50">TRANSACTION COUNT</span>
+            </div>
+        </div>
+        <div id="business-chart-container" class="space-y-4 font-mono text-sm md:text-base min-h-[200px]"></div>
+        <div class="relative w-full h-px bg-transparent -mt-2 pointer-events-none">
+            <div class="absolute left-1/2 top-0 h-full w-px bg-gray-800 -translate-x-1/2 h-[500px] -z-10"></div>
+        </div>
+    </section>
+
+    <!-- 行业增长趋势 -->
+    <section id="section-industry" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
+        <div class="mb-8 pointer-events-none">
+            <h3 class="text-3xl font-black text-white tracking-tight">行业增长趋势</h3>
+            <p class="text-gray-500 text-sm">各行业上线企业数量年度走势</p>
+        </div> 
+        <div id="line-chart-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 min-h-[300px]"></div>
+    </section>
+    
+    <!-- 行业收入结构 -->
+    <section id="section-revenue-share" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
+        <div class="mb-10 pointer-events-none">
+            <h3 class="text-xl font-bold text-gray-500 uppercase tracking-widest mb-2">行业收入结构 (REVENUE SHARE)</h3>
+            <p class="text-gray-400 text-sm">按收入占比统计，展示各行业对总收入的贡献度。</p>
+        </div>
+        <div class="hidden md:grid grid-cols-6 gap-4 mb-10 text-sm font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-4 text-center pointer-events-none">
+            <div class="text-left">Year</div>
+            <div>建筑业</div>
+            <div>制造业</div>
+            <div>批发零售</div>
+            <div>租赁商务</div>
+            <div>其他</div>
+        </div>
+        <div id="revenue-waffle-container" class="space-y-12 md:space-y-8 min-h-[200px]"></div>
+    </section>
+
+    <!-- 人员结构分布 -->
+    <section id="section-personnel" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 pointer-events-none">
+            <div>
+                <h3 class="text-3xl font-black text-white tracking-tight mb-2">人员结构分布</h3>
+                <p class="text-gray-500 text-sm max-w-lg">
+                    上方显示<span class="text-white font-bold">员工总数</span>，下方显示<span class="text-[#00e676] font-bold">销售及营销人员</span>。
+                    每一个点代表约 50 名员工。
+                </p>
+            </div>
+            <div class="text-right hidden md:block">
+                <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Scale</div>
+                <div class="flex items-center justify-end gap-2 text-sm text-gray-400">
+                    <span class="w-1 h-1 bg-white rounded-full"></span>
+                    <span>= ~50 Employees</span>
+                </div>
+            </div>
+        </div>
+        <div class="relative w-full max-w-4xl mx-auto h-[500px] flex justify-center items-center">
+            <div class="absolute inset-0 flex flex-col justify-center pointer-events-none">
+                <div class="w-full h-px bg-gray-700"></div>
+            </div>
+            <div id="personnel-chart" class="relative z-10 grid grid-cols-3 gap-16 md:gap-32 h-full items-center"></div>
+            <div class="absolute top-4 left-0 text-white font-bold text-sm pointer-events-none">TOTAL EMPLOYEES</div>
+            <div class="absolute bottom-4 left-0 text-[#00e676] font-bold text-sm pointer-events-none">SALES STAFF</div>
+        </div>
+    </section>
+
+    <!-- 企业性质分布 -->
+    <section id="section-ownership" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
+        <div class="mb-8 pointer-events-none">
+            <h3 class="text-3xl font-black text-white tracking-tight">企业性质结构</h3>
+        </div>
+        <div class="hidden md:grid grid-cols-5 gap-8 mb-10 text-base font-bold text-white uppercase tracking-widest border-b border-gray-800 pb-4 pointer-events-none">
+            <div class="col-span-1">Year</div>
+            <div class="text-center">央企 (Central SOE)</div>
+            <div class="text-center">国企 (SOE)</div>
+            <div class="text-center">民企 (Private)</div>
+            <div class="text-center">其他 (Others)</div>
+        </div>
+        <div id="waffle-container" class="space-y-12 md:space-y-8 min-h-[300px]"></div>
+    </section>
+
+    <!-- 市场竞争格局 -->
+    <section id="section-competition" class="mb-32 pt-8 border-t border-gray-900 interactive-section group">
+        <div class="mb-10 pointer-events-none">
+            <h3 class="text-3xl font-black text-white tracking-tight mb-2">市场竞争格局</h3>
+            <p class="text-gray-500 text-sm">
+                Top 5 独立数字应收账款确权平台排名。
+                <span class="text-white font-bold px-1">白色条形</span>代表确权额市占率，
+                <span class="text-[#00e676] font-bold px-1">绿色条形</span>代表融资额市占率。
+            </p>
+        </div>
+        <div id="market-rank-container" class="flex flex-col gap-6 min-h-[400px]"></div>
+        <div class="text-right text-xs text-gray-600 mt-4 pointer-events-none">单位：10亿元 (CNY Billion)</div>
+    </section>
+
+    <!-- 关键财务指标 -->
+    <section id="section-financial" class="mb-20 pt-8 border-t border-gray-900 interactive-section group">
+        <div class="mb-10 pointer-events-none">
+            <h3 class="text-3xl font-black text-white tracking-tight mb-2">关键财务指标表现</h3>
+            <p class="text-gray-500 text-sm">2022 - 2024 三年趋势对比</p>
+        </div>
+        <div id="financial-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-[200px]"></div>
+    </section>
+
+    <footer class="mt-20 pt-10 border-t border-gray-800 text-gray-500 text-sm flex justify-between pb-12 px-4">
+        <p>数据来源：中企云链股份公司信息系统专项核查报告 (2022-2025)</p>
+        <p>2025年数据统计截至6月30日</p>
+    </footer>
+
+    <!-- ================================================================= -->
+    <!-- LOGIC 1: Vanilla JS Functions (Encapsulated for Replay) -->
+    <!-- ================================================================= -->
+    <script>
+        // --- 1. Market Coins ---
+        function renderCoins() {
+            const container = document.getElementById('market-coin-container');
+            container.innerHTML = ''; // Clear
+            const marketData = [
+                { type: 'bill', count: 40, label: '票据' }, 
+                { type: 'yunxin', count: 10, label: '云信' },
+                { type: 'lc', count: 10, label: '信用证' }
+            ];
+            let coinHtml = '';
+            let globalIndex = 0;
+            marketData.forEach(group => {
+                for (let i = 0; i < group.count; i++) {
+                    let coinClass = group.type === 'bill' ? 'coin-bill' : (group.type === 'yunxin' ? 'coin-yunxin' : 'coin-lc');
+                    const delay = globalIndex * 0.02;
+                    coinHtml += `<div class="market-coin ${coinClass}" style="animation-delay: ${delay}s" title="${group.label}">¥</div>`;
+                    globalIndex++;
+                }
+            });
+            container.innerHTML = coinHtml;
+        }
+
+        // --- 2. Business Data ---
+        function renderBusiness() {
+            const container = document.getElementById('business-chart-container');
+            container.innerHTML = '';
+            const businessData = [{ year: '2022', amount: 35553770, count: 229154 }, { year: '2023', amount: 51700186, count: 364543 }, { year: '2024', amount: 61607001, count: 484876 }, { year: '2025 (1-6月)', amount: 31471493, count: 269534 }];
+            const maxAmount = Math.max(...businessData.map(d => d.amount));
+            const maxCount = Math.max(...businessData.map(d => d.count));
+            
+            businessData.forEach(item => {
+                const amountWidth = (item.amount / maxAmount) * 95;
+                const countWidth = (item.count / maxCount) * 95;
+                const fmtAmount = item.amount.toLocaleString();
+                const fmtCount = item.count.toLocaleString();
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-[1fr_120px_1fr] md:grid-cols-[1fr_160px_1fr] gap-4 items-center group py-2 hover:bg-white/5 transition-colors rounded';
+                row.innerHTML = `<div class="flex items-center justify-end w-full relative h-10"><div class="h-full bg-white bar-animate shadow-[0_0_10px_rgba(255,255,255,0.2)] relative flex items-center justify-end pr-2 bar-animate-target" style="width: 0" data-width="${amountWidth}%"><span class="text-xs md:text-sm font-bold text-black whitespace-nowrap overflow-hidden">${fmtAmount}</span></div></div><div class="text-center text-base md:text-lg font-bold text-white leading-none z-10">${item.year}</div><div class="flex items-center justify-start w-full relative h-10"><div class="h-full bg-white bar-animate shadow-[0_0_10px_rgba(255,255,255,0.2)] relative flex items-center justify-start pl-2 bar-animate-target" style="width: 0" data-width="${countWidth}%"><span class="text-xs md:text-sm font-bold text-black whitespace-nowrap overflow-hidden">${fmtCount}</span></div></div>`;
+                container.appendChild(row);
+            });
+            setTimeout(() => {
+                container.querySelectorAll('.bar-animate-target').forEach(el => {
+                    const w = el.getAttribute('data-width');
+                    if(w) el.style.width = w;
+                });
+            }, 100);
+        }
+
+        // --- 3. Industry Line Charts (Chart.js) ---
+        let lineCharts = []; // Store chart instances
+        function renderLineCharts() {
+            const container = document.getElementById('line-chart-grid');
+            container.innerHTML = '';
+            lineCharts.forEach(chart => chart.destroy()); // Cleanup old charts
+            lineCharts = [];
+
+            const lineLabels = ['2022', '2023', '2024', '2025(H1)'];
+            const rawIndustries = [{ name: '制造业', data: [776, 1180, 1691, 1885] }, { name: '建筑业', data: [932, 1279, 1629, 1754] }, { name: '批发和零售业', data: [267, 536, 755, 966] }, { name: '租赁和商务服务业', data: [293, 275, 507, 649] }, { name: '科学研究和技术服务业', data: [195, 288, 480, 647] }, { name: '卫生和社会工作', data: [241, 363, 360, 366] }, { name: '电力、热力、燃气及水生产', data: [49, 101, 160, 187] }, { name: '信息传输、软件和信息技术', data: [83, 117, 152, 180] }, { name: '交通运输、仓储和邮政业', data: [60, 101, 139, 176] }, { name: '房地产业', data: [46, 105, 143, 173] }, { name: '水利、环境和公共设施管理', data: [39, 83, 136, 181] }, { name: '农、林、牧、渔业', data: [34, 75, 130, 148] }, { name: '金融业', data: [54, 55, 80, 99] }, { name: '采矿业', data: [17, 27, 40, 48] }, { name: '居民服务等', data: [11, 18, 32, 42] }, { name: '文化、体育和娱乐业', data: [6, 14, 18, 26] }, { name: '教育', data: [4, 6, 6, 23] }, { name: '住宿和餐饮业', data: [3, 9, 13, 17] }, { name: '卫生', data: [0, 0, 0, 161] }, { name: '医院', data: [0, 0, 116, 0] }, { name: '公共管理', data: [0, 0, 0, 1] }];
+            let processedIndustries = [];
+            let othersData = [0, 0, 0, 0]; 
+            rawIndustries.forEach(item => { const val2025 = item.data[3]; if (val2025 < 500) { item.data.forEach((val, idx) => { othersData[idx] += val; }); } else { processedIndustries.push(item); } });
+            processedIndustries.sort((a, b) => b.data[3] - a.data[3]);
+            if (othersData.some(val => val > 0)) { processedIndustries.push({ name: '其他行业 (Others)', data: othersData }); }
+            
+            Chart.defaults.font.family = "'Noto Sans SC', sans-serif";
+            Chart.defaults.color = '#666';
+
+            processedIndustries.forEach((industry, index) => {
+                const card = document.createElement('div');
+                card.className = 'industry-card flex flex-col justify-between';
+                const delay = (index * 0.05).toFixed(2);
+                card.style.animationDelay = `${delay}s`; // Re-trigger CSS fade-in
+                // Reset animation state manually
+                card.classList.remove('animate-slideUpFade');
+                void card.offsetWidth; // Trigger reflow
+                
+                const latestValue = industry.data[3];
+                card.innerHTML = `<div><h3 class="text-lg font-bold text-white uppercase truncate mb-2" title="${industry.name}">${industry.name}</h3><div class="text-4xl font-black text-white tracking-tighter">${latestValue}</div></div><div class="chart-container mt-4"><canvas id="chart-ind-${index}"></canvas></div>`;
+                container.appendChild(card);
+                const ctx = document.getElementById(`chart-ind-${index}`).getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                const chart = new Chart(ctx, { type: 'line', data: { labels: lineLabels, datasets: [{ data: industry.data, borderColor: '#ffffff', borderWidth: 2, backgroundColor: gradient, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: '#fff' }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 1500, easing: 'easeOutQuart', }, plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } }, scales: { x: { display: false }, y: { display: false, min: 0 } } } });
+                lineCharts.push(chart);
+            });
+        }
+
+        // --- 4. Revenue Waffles ---
+        function renderRevenueWaffle() {
+            const container = document.getElementById('revenue-waffle-container');
+            container.innerHTML = '';
+            const revenueData = [ { year: '2022', types: [{ name: '建筑业', percent: 64 }, { name: '制造业', percent: 14 }, { name: '批发零售', percent: 5 }, { name: '租赁商务', percent: 6 }, { name: '其他', percent: 11 }] }, { year: '2023', types: [{ name: '建筑业', percent: 62 }, { name: '制造业', percent: 14 }, { name: '批发零售', percent: 6 }, { name: '租赁商务', percent: 5 }, { name: '其他', percent: 13 }] }, { year: '2024', types: [{ name: '建筑业', percent: 58 }, { name: '制造业', percent: 14 }, { name: '批发零售', percent: 7 }, { name: '租赁商务', percent: 8 }, { name: '其他', percent: 13 }] } ];
+            revenueData.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'waffle-row-revenue md:grid md:grid-cols-6 md:gap-4 items-center border-b border-gray-900 pb-8';
+                const yearLabel = document.createElement('div');
+                yearLabel.className = 'col-span-1 text-4xl md:text-4xl font-black text-white font-mono tracking-tighter mb-4 md:mb-0';
+                yearLabel.textContent = row.year;
+                rowDiv.appendChild(yearLabel);
+                row.types.forEach(type => {
+                    const percent = type.percent;
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'waffle-group flex flex-col items-center';
+                    let gridHtml = '<div class="waffle-grid">';
+                    for (let i = 0; i < 100; i++) {
+                        const isFilled = i >= (100 - percent); 
+                        const delay = Math.random() * 0.5;
+                        gridHtml += `<div class="waffle-cell ${isFilled ? 'filled' : ''}" style="${isFilled ? `animation-delay: ${delay}s` : ''}"></div>`;
+                    }
+                    gridHtml += '</div>';
+                    groupDiv.innerHTML = `<div class="flex flex-row md:flex-col items-center gap-4 w-full md:w-auto justify-between md:justify-center"><div class="md:hidden text-white font-bold w-24 text-sm">${type.name}</div>${gridHtml}<div class="text-left md:text-center mt-0 md:mt-3"><span class="text-2xl font-black text-white leading-none">${percent}%</span><div class="text-xs text-gray-400 font-bold mt-1 hidden md:block tracking-wide uppercase">${type.name}</div></div></div>`;
+                    rowDiv.appendChild(groupDiv);
+                });
+                container.appendChild(rowDiv);
+            });
+        }
+
+        // --- 5. Personnel Dots ---
+        function renderPersonnel() {
+            const container = document.getElementById('personnel-chart');
+            container.innerHTML = '';
+            const personnelData = [{ year: '2022', total: 1348, sales: 559 }, { year: '2023', total: 1481, sales: 619 }, { year: '2024', total: 1736, sales: 753 }];
+            const DOT_SCALE = 50; 
+            personnelData.forEach((data, index) => {
+                const colContainer = document.createElement('div');
+                colContainer.className = 'flex flex-col items-center h-full justify-center relative group';
+                const topDotsCount = Math.ceil(data.total / DOT_SCALE);
+                const bottomDotsCount = Math.ceil(data.sales / DOT_SCALE);
+                const topCol = document.createElement('div');
+                topCol.className = 'dot-column mb-4';
+                let topHtml = '';
+                for (let i = 0; i < topDotsCount; i++) {
+                    const delay = (i * 0.01 + Math.random() * 0.2).toFixed(3);
+                    topHtml += `<div class="person-dot" style="animation-delay: ${delay}s"></div>`;
+                }
+                topCol.innerHTML = topHtml;
+                const bottomCol = document.createElement('div');
+                bottomCol.className = 'dot-column downwards mt-4';
+                let bottomHtml = '';
+                for (let i = 0; i < bottomDotsCount; i++) {
+                    const delay = (i * 0.01 + Math.random() * 0.2).toFixed(3);
+                    bottomHtml += `<div class="person-dot green" style="animation-delay: ${delay}s"></div>`;
+                }
+                bottomCol.innerHTML = bottomHtml;
+                const label = document.createElement('div');
+                label.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#111] z-20 px-2 py-1 border border-gray-800 rounded text-white font-mono font-bold text-lg shadow-xl';
+                label.innerHTML = `<span class="block text-center leading-none">${data.year}</span>`;
+                const tooltip = document.createElement('div');
+                tooltip.className = 'absolute top-1/2 left-full ml-4 -translate-y-1/2 w-40 bg-gray-800 p-3 rounded shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none text-xs';
+                tooltip.innerHTML = `<div class="text-gray-400 mb-1 border-b border-gray-600 pb-1">${data.year} Stats</div><div class="flex justify-between text-white font-bold"><span>Total:</span> <span>${data.total}</span></div><div class="flex justify-between text-[#00e676] font-bold"><span>Sales:</span> <span>${data.sales}</span></div>`;
+                label.appendChild(tooltip);
+                colContainer.appendChild(topCol);
+                colContainer.appendChild(label);
+                colContainer.appendChild(bottomCol);
+                container.appendChild(colContainer);
+            });
+        }
+
+        // --- 6. Ownership Waffles ---
+        function renderOwnership() {
+            const container = document.getElementById('waffle-container');
+            container.innerHTML = '';
+            const natureData = [ { year: '2022', types: [{ name: '央企', value: 1047, total: 3110 }, { name: '国企', value: 798, total: 3110 }, { name: '民企', value: 1020, total: 3110 }, { name: '其他', value: 245, total: 3110 }] }, { year: '2023', types: [{ name: '央企', value: 1329, total: 4632 }, { name: '国企', value: 1366, total: 4632 }, { name: '民企', value: 1552, total: 4632 }, { name: '其他', value: 385, total: 4632 }] }, { year: '2024', types: [{ name: '央企', value: 1559, total: 6601 }, { name: '国企', value: 2190, total: 6601 }, { name: '民企', value: 2331, total: 6601 }, { name: '其他', value: 521, total: 6601 }] }, { year: '2025', types: [{ name: '央企', value: 1651, total: 7761 }, { name: '国企', value: 2718, total: 7761 }, { name: '民企', value: 2795, total: 7761 }, { name: '其他', value: 597, total: 7761 }] } ];
+            natureData.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'waffle-row md:grid md:grid-cols-5 md:gap-8 items-center border-b border-gray-900 pb-8';
+                const yearLabel = document.createElement('div');
+                yearLabel.className = 'col-span-1 text-4xl md:text-5xl font-black text-white font-mono tracking-tighter mb-4 md:mb-0';
+                yearLabel.textContent = row.year;
+                rowDiv.appendChild(yearLabel);
+                row.types.forEach(type => {
+                    const percent = Math.round((type.value / type.total) * 100);
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'waffle-group flex flex-col items-center';
+                    let gridHtml = '<div class="waffle-grid">';
+                    for (let i = 0; i < 100; i++) {
+                        const isFilled = i >= (100 - percent);
+                        const delay = Math.random() * 0.5;
+                        gridHtml += `<div class="waffle-cell ${isFilled ? 'filled' : ''}" style="${isFilled ? `animation-delay: ${delay}s` : ''}"></div>`;
+                    }
+                    gridHtml += '</div>';
+                    groupDiv.innerHTML = `<div class="flex flex-row md:flex-col items-center gap-4 w-full md:w-auto justify-between md:justify-start"><div class="md:hidden text-white font-bold w-16 text-lg">${type.name}</div>${gridHtml}<div class="text-left md:text-center mt-0 md:mt-3"><span class="text-3xl font-black text-white leading-none">${percent}%</span><div class="text-sm text-white font-bold mt-2 hidden md:block tracking-wide">${type.name}</div></div></div>`;
+                    rowDiv.appendChild(groupDiv);
+                });
+                container.appendChild(rowDiv);
+            });
+        }
+
+        // --- 7. Market Ranking ---
+        function renderRanking() {
+            const container = document.getElementById('market-rank-container');
+            container.innerHTML = '';
+            const rankingData = [ { name: '中企云链', confirmAmount: 625, confirmShare: 29.50, financeAmount: 449, financeShare: 32.60 }, { name: '简单汇', confirmAmount: 298, confirmShare: 14.10, financeAmount: 182, financeShare: 13.20 }, { name: '金网络', confirmAmount: 168, confirmShare: 7.90, financeAmount: 94, financeShare: 6.80 }, { name: '联易融', confirmAmount: 159, confirmShare: 7.50, financeAmount: 104, financeShare: 7.50 }, { name: '欧冶金服', confirmAmount: 107, confirmShare: 5.10, financeAmount: 64, financeShare: 4.70 } ];
+            rankingData.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-[50px_100px_1fr] md:grid-cols-[80px_150px_1fr] gap-4 md:gap-8 items-center border-b border-gray-800 pb-6 group';
+                const rankNum = (index + 1).toString().padStart(2, '0');
+                const rankClass = index === 0 ? 'text-white' : 'text-gray-600';
+                const delay = index * 0.1;
+                row.innerHTML = `<div class="text-4xl md:text-5xl font-black ${rankClass} opacity-50 font-mono leading-none">${rankNum}</div><div class="text-base md:text-xl font-bold text-gray-200">${item.name}</div><div class="flex flex-col gap-2 w-full"><div class="flex items-center gap-3 w-full"><div class="h-8 md:h-10 bg-white shadow-[0_0_10px_rgba(255,255,255,0.3)] flex items-center px-2 min-w-[2px] bar-animate-target origin-left" style="width: 0; transform: scaleX(0);" data-scale="${item.confirmShare}"><span class="text-black font-bold text-xs md:text-sm whitespace-nowrap hidden md:inline-block opacity-0 fade-in-delay">${item.confirmShare}% 市占率</span></div><div class="text-white text-sm font-mono font-bold whitespace-nowrap"><span class="text-gray-500 text-xs mr-1">确权</span>${item.confirmAmount}</div></div><div class="flex items-center gap-3 w-full"><div class="h-8 md:h-10 bg-[#00e676] shadow-[0_0_5px_rgba(0,230,118,0.4)] flex items-center px-2 min-w-[2px] bar-animate-target origin-left" style="width: 0; transform: scaleX(0);" data-scale="${item.financeShare}"><span class="text-black font-bold text-xs md:text-sm whitespace-nowrap hidden md:inline-block opacity-0 fade-in-delay">${item.financeShare}% 市占率</span></div><div class="text-[#00e676] text-sm font-mono font-bold whitespace-nowrap"><span class="text-gray-500 text-xs mr-1">融资</span>${item.financeAmount}</div></div></div>`;
+                row.querySelectorAll('.bar-animate-target').forEach(el => { el.style.transition = `transform 1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, width 1s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s`; });
+                row.querySelectorAll('.fade-in-delay').forEach(el => { el.style.transition = `opacity 0.5s ease ${delay + 0.5}s`; setTimeout(() => el.style.opacity = '1', 100); });
+                container.appendChild(row);
+            });
+            setTimeout(() => {
+                container.querySelectorAll('.bar-animate-target').forEach(el => {
+                    const rawScale = el.getAttribute('data-scale');
+                    const targetWidth = parseFloat(rawScale);
+                    const scaleFactor = 2.8; 
+                    el.style.width = `${targetWidth * scaleFactor}%`; 
+                    el.style.transform = 'scaleX(1)';
+                });
+            }, 300);
+        }
+
+        // --- 8. Financials ---
+        function renderFinancials() {
+            const container = document.getElementById('financial-grid');
+            container.innerHTML = '';
+            const financialData = [ { name: '毛利率', data: [87.7, 93.4, 95.9], unit: '%', desc: 'Gross Profit Margin' }, { name: '净利率', data: [7.0, 17.3, 15.9], unit: '%', desc: 'Net Profit Margin' }, { name: 'ROE', data: [19.0, 44.8, 32.0], unit: '%', desc: 'Return on Equity' }, { name: 'ROA', data: [2.4, 16.4, 18.3], unit: '%', desc: 'Return on Assets' }, { name: '除税前利润率', data: [6.6, 16.9, 18.5], unit: '%', desc: 'Profit Before Tax' }, { name: '流动比率', data: [1.15, 1.63, 2.21], unit: '倍', desc: 'Current Ratio' }, { name: '负债比率', data: [6.9, 7.1, 4.4], unit: '%', desc: 'Gearing Ratio' } ];
+            financialData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-[#1a1a1a] p-6 rounded border border-gray-800 hover:border-gray-600 transition-colors flex flex-col justify-between h-48 relative overflow-hidden group';
+                const maxVal = Math.max(...item.data);
+                let barsHtml = '';
+                item.data.forEach((val, idx) => {
+                    const year = 2022 + idx;
+                    const heightPercent = (val / maxVal * 80); 
+                    const barColor = idx === 2 ? 'bg-[#00e676]' : 'bg-gray-700';
+                    const delay = (index * 0.1) + (idx * 0.1); 
+                    barsHtml += `<div class="flex flex-col items-center justify-end gap-2 flex-1 h-full group/bar"><span class="text-[10px] text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-1">${val}</span><div class="w-full max-w-[20px] rounded-t-sm ${barColor} trend-bar origin-bottom" style="height: 0; transition-delay: ${delay}s" data-height="${heightPercent}%"></div><span class="text-[10px] text-gray-600 font-mono">${year}</span></div>`;
+                });
+                card.innerHTML = `<div class="flex justify-between items-start z-10"><div><h4 class="text-white font-bold text-lg">${item.name}</h4><p class="text-xs text-gray-500 uppercase tracking-wider mt-0.5">${item.desc}</p></div><div class="text-right"><span class="text-3xl font-black text-white tracking-tighter block">${item.data[2]}<span class="text-sm font-normal text-gray-500 ml-1">${item.unit}</span></span></div></div><div class="flex items-end justify-between gap-4 mt-4 h-20 w-full px-2">${barsHtml}</div>`;
+                container.appendChild(card);
+            });
+            setTimeout(() => {
+                container.querySelectorAll('.trend-bar').forEach(el => {
+                    el.style.height = el.getAttribute('data-height');
+                });
+            }, 500);
+        }
+
+        // --- Init & Intersection Observer ---
+        window.addEventListener('DOMContentLoaded', () => {
+            
+            // Map IDs to their render functions
+            const renderMap = {
+                'market-coin-container': renderCoins,
+                'business-chart-container': renderBusiness,
+                'line-chart-grid': renderLineCharts,
+                'revenue-waffle-container': renderRevenueWaffle,
+                'personnel-chart': renderPersonnel,
+                'waffle-container': renderOwnership,
+                'market-rank-container': renderRanking,
+                'financial-grid': renderFinancials
+            };
+
+            // Setup Observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5 // Trigger when 20% visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id;
+                        // For wrapper sections, find the inner container ID if needed, 
+                        // or better, observe the inner container directly.
+                        // Here we attached IDs to inner containers in HTML, so it matches directly.
+                        if (renderMap[id]) {
+                            renderMap[id](); // Trigger animation
+                            observer.unobserve(entry.target); // Ensure it runs once automatically
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Start observing
+            Object.keys(renderMap).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) observer.observe(el);
+            });
+
+            // Keep click listeners for manual replay
+            document.getElementById('section-macro').addEventListener('click', renderCoins);
+            document.getElementById('section-business').addEventListener('click', renderBusiness);
+            document.getElementById('section-industry').addEventListener('click', renderLineCharts);
+            document.getElementById('section-revenue-share').addEventListener('click', renderRevenueWaffle);
+            document.getElementById('section-personnel').addEventListener('click', renderPersonnel);
+            document.getElementById('section-ownership').addEventListener('click', renderOwnership);
+            document.getElementById('section-competition').addEventListener('click', renderRanking);
+            document.getElementById('section-financial').addEventListener('click', renderFinancials);
+        });
+    </script>
+
+    <!-- ================================================================= -->
+    <!-- LOGIC 2: React Logic (Interactive Components & Nav) -->
+    <!-- ================================================================= -->
+    <script type="text/babel" data-type="module" data-presets="react">
+        import React, { useEffect, useRef, useState, useMemo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { useInView, useMotionValue, animate, motion, AnimatePresence } from 'framer-motion';
+        import * as d3 from 'd3';
+
+        // --- Reusable Component Wrapper for Refresh ---
+        const RefreshWrapper = ({ children, title }) => {
+            const [key, setKey] = useState(0);
+            return (
+                <div 
+                    className="relative w-full cursor-pointer group" 
+                    onClick={() => setKey(k => k + 1)}
+                    title="点击重播动画"
+                >
+                    <div key={key}>
+                        {children}
+                    </div>
+                    {title && (
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur border border-white/10 pointer-events-none">
+                            点击刷新
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- Missing StatColumn Component ---
+        const StatColumn = ({ topText, number, bottomText }) => (
+            <div className="flex flex-col items-center justify-start text-center px-4 mb-12 md:mb-0">
+                <h3 className="text-white font-bold text-lg md:text-xl tracking-wide mb-2 font-sans">{topText}</h3>
+                <div className="text-white text-5xl md:text-7xl font-black leading-tight tracking-tighter my-2 font-sans drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+                    <AnimatedNumber value={number} duration={2} />
+                </div>
+                <div className="mt-2">
+                    <span className="bg-[#1d6a64] text-white text-lg md:text-xl font-bold px-3 py-1 leading-normal shadow-lg rounded-md border border-[#2d8a84]/50">{bottomText}</span>
+                </div>
+            </div>
+        );
+
+        // ... (Map & Supply Chain Components remain mostly same logic, but wrapped) ...
+        const MAP_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/f/fe/China_blank_province_map.svg";
+        const TIMELINE_DATA = [
+            { year: 2020, currentAmount: 1500, totalAmount: 2476, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }] },
+            { year: 2021, currentAmount: 2500, totalAmount: 4976, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }] },
+            { year: 2022, currentAmount: 3555, totalAmount: 8531, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }, { x: 520, y: 480 }, { x: 680, y: 470 }, { x: 820, y: 470 }, { x: 740, y: 300 }, { x: 570, y: 490 }, { x: 790, y: 450 }] },
+            { year: 2023, currentAmount: 5170, totalAmount: 13701, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }, { x: 520, y: 480 }, { x: 680, y: 470 }, { x: 820, y: 470 }, { x: 740, y: 300 }, { x: 570, y: 490 }, { x: 790, y: 450 }, { x: 580, y: 420 }, { x: 680, y: 400 }, { x: 660, y: 530 }, { x: 760, y: 360 }, { x: 830, y: 240 }, { x: 750, y: 460 }, { x: 800, y: 540 }, { x: 460, y: 560 }, { x: 710, y: 330 }] },
+            { year: 2024, currentAmount: 6161, totalAmount: 19861, nodes: [{ x: 730, y: 290 }, { x: 840, y: 460 }, { x: 710, y: 600 }, { x: 700, y: 590 }, { x: 520, y: 480 }, { x: 680, y: 470 }, { x: 820, y: 470 }, { x: 740, y: 300 }, { x: 570, y: 490 }, { x: 790, y: 450 }, { x: 580, y: 420 }, { x: 680, y: 400 }, { x: 660, y: 530 }, { x: 760, y: 360 }, { x: 830, y: 240 }, { x: 750, y: 460 }, { x: 800, y: 540 }, { x: 460, y: 560 }, { x: 710, y: 330 }, { x: 870, y: 180 }, { x: 850, y: 210 }, { x: 680, y: 350 }, { x: 650, y: 310 }, { x: 480, y: 390 }, { x: 430, y: 400 }, { x: 520, y: 360 }, { x: 550, y: 520 }, { x: 610, y: 600 }, { x: 780, y: 570 }, { x: 730, y: 510 }, { x: 630, y: 650 }, { x: 220, y: 220 }, { x: 280, y: 480 }] }
+        ];
+
+        const AnimatedNumber = ({ value, duration = 1 }) => {
+            const ref = useRef(null);
+            const count = useMotionValue(0);
+            useEffect(() => { const controls = animate(count, value, { duration: duration, ease: "easeOut" }); return controls.stop; }, [value, count, duration]);
+            useEffect(() => { const unsubscribe = count.on("change", (latest) => { if (ref.current) ref.current.textContent = Math.round(latest).toLocaleString('en-US'); }); return () => unsubscribe(); }, [count]);
+            return <span ref={ref}>0</span>;
+        };
+
+        const MapVisualization = () => {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const currentData = TIMELINE_DATA[currentIndex];
+            const containerRef = useRef(null);
+            const isInView = useInView(containerRef, { once: false, margin: "-100px" });
+
+            useEffect(() => {
+                if (!isInView) return;
+                const interval = setInterval(() => { setCurrentIndex((prev) => (prev >= TIMELINE_DATA.length - 1 ? 0 : prev + 1)); }, 2500); // Loop
+                return () => clearInterval(interval);
+            }, [isInView]);
+
+            return (
+                <div ref={containerRef} className="w-full h-[600px] flex flex-col items-center justify-center relative bg-slate-900/30 rounded-xl overflow-hidden shadow-2xl border border-slate-700/50 backdrop-blur-sm">
+                    <div className="absolute top-8 left-0 right-0 px-10 flex justify-between items-center z-10">
+                        <div className="absolute top-1/2 left-10 right-10 h-0.5 bg-slate-600 -z-10"></div>
+                        <motion.div className="absolute top-1/2 left-10 h-0.5 bg-[#f97316] -z-10 shadow-[0_0_10px_#f97316]" initial={{ width: "0%" }} animate={{ width: `${(currentIndex / (TIMELINE_DATA.length - 1)) * 100}%` }} transition={{ duration: 0.5 }} />
+                        {TIMELINE_DATA.map((d, idx) => ( <div key={d.year} className={`flex flex-col items-center transition-colors duration-300 ${idx <= currentIndex ? 'text-white font-bold' : 'text-white/40'}`}> <div className={`w-3 h-3 rounded-full mb-2 ${idx <= currentIndex ? 'bg-[#f97316] shadow-[0_0_8px_#f97316]' : 'bg-slate-600'} ring-4 ring-slate-900`}></div> <span className="text-xs tracking-widest">{d.year}</span> </div> ))}
+                    </div>
+                    <div className="w-full max-w-4xl mx-auto flex justify-between items-start px-10 mt-12 z-10 pointer-events-none">
+                        <div className="text-left"> <div className="text-white text-4xl font-black tracking-tighter flex items-baseline drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"> <AnimatedNumber value={currentData.currentAmount} duration={0.8} /> <span className="text-xl ml-2 text-white/80 font-bold">亿</span> </div> <div className="bg-[#1d6a64] text-white inline-block px-2 py-0.5 text-xs font-bold mt-1 rounded shadow-lg border border-[#2d8a84]/50">当年确权额</div> </div>
+                        <div className="text-right flex flex-col items-end"> <div className="text-white text-4xl font-black tracking-tighter flex items-baseline drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"> <AnimatedNumber value={currentData.totalAmount} duration={0.8} /> <span className="text-xl ml-2 text-white/80 font-bold">亿</span> </div> <div className="bg-[#1d6a64] text-white inline-block px-2 py-0.5 text-xs font-bold mt-1 rounded shadow-lg border border-[#2d8a84]/50">累计确权额</div> </div>
+                    </div>
+                    <div className="relative w-full h-full mt-4 flex items-center justify-center">
+                        <svg viewBox="0 0 1024 768" className="w-full h-full drop-shadow-2xl" style={{ overflow: 'visible' }}>
+                            <image href={MAP_IMAGE_URL} x="0" y="0" width="1024" height="768" className="map-filter" />
+                            <AnimatePresence> {currentData.nodes.map((node, i) => { if (i === 0) return null; const startNode = currentData.nodes[0]; return ( <motion.path key={`line-${currentData.year}-${i}`} d={`M ${startNode.x} ${startNode.y} Q ${(startNode.x + node.x)/2} ${(startNode.y + node.y)/2 - 80} ${node.x} ${node.y}`} initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.6 }} exit={{ opacity: 0 }} transition={{ duration: 1.5, ease: "easeInOut" }} stroke="#f97316" strokeWidth="1.5" fill="none" style={{ filter: "drop-shadow(0px 0px 2px rgba(249, 115, 22, 0.5))" }} /> ); })} </AnimatePresence>
+                            <AnimatePresence> {currentData.nodes.map((node, i) => ( <motion.g key={`node-${currentData.year}-${i}`} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: i * 0.1, duration: 0.5 }}> <motion.circle cx={node.x} cy={node.y} r="8" stroke="#f97316" strokeWidth="1.5" fill="none" initial={{ scale: 0.5, opacity: 1 }} animate={{ scale: 2.5, opacity: 0 }} transition={{ repeat: Infinity, duration: 2 }} /> <circle cx={node.x} cy={node.y} r="3" fill="#1d6a64" stroke="#ffffff" strokeWidth="1" /> </motion.g> ))} </AnimatePresence>
+                        </svg>
+                    </div>
+                </div>
+            );
+        };
+
+        const SupplyChainVisualization = () => {
+            const containerRef = useRef(null);
+            const isInView = useInView(containerRef, { once: false, margin: "-100px" });
+
+            const targetNodes = useMemo(() => {
+                const nodes = [];
+                for (let i = 0; i < 129; i++) {
+                const y = 300 + (Math.random() - 0.5) * 400; const x = 600 + Math.random() * 300;
+                nodes.push({ id: i, x, y, delay: Math.random() * 2 });
+                }
+                return nodes.sort((a, b) => a.y - b.y);
+            }, []);
+            const rootNode = { x: 150, y: 300 };
+            return (
+                <div ref={containerRef} className="w-full h-[500px] flex flex-col items-center justify-center relative">
+                    <div className="text-center mb-8 max-w-2xl px-4 pointer-events-none">
+                        <h2 className="text-white text-2xl font-bold mb-2">信用穿透力：从 1 到 129</h2>
+                        <p className="text-white/80 text-sm">单笔确权穿透 <strong className="text-white">7级</strong>，覆盖 <strong className="text-white">129家</strong>。</p>
+                    </div>
+                    <div className="relative w-full max-w-6xl h-full overflow-visible">
+                        <svg viewBox="0 0 1000 600" className="w-full h-full" style={{ overflow: 'visible' }}>
+                        <motion.g initial={{ opacity: 0, scale: 0 }} animate={isInView ? { opacity: 1, scale: 1 } : {}} transition={{ duration: 0.8, ease: "backOut" }}> <circle cx={rootNode.x} cy={rootNode.y} r="30" fill="#1d6a64" opacity="0.3" /> <circle cx={rootNode.x} cy={rootNode.y} r="12" fill="#1d6a64" /> <text x={rootNode.x} y={rootNode.y + 45} textAnchor="middle" className="fill-white text-sm font-bold">核心企业</text> </motion.g>
+                        {targetNodes.map((node) => ( <motion.path key={`link-${node.id}`} d={`M ${rootNode.x} ${rootNode.y} C ${rootNode.x + 200} ${rootNode.y}, ${node.x - 200} ${node.y}, ${node.x} ${node.y}`} fill="none" stroke="#f97316" strokeWidth="0.5" strokeOpacity="0.4" initial={{ pathLength: 0 }} animate={isInView ? { pathLength: 1 } : {}} transition={{ duration: 1.5, delay: node.delay * 0.5, ease: "easeInOut" }} /> ))}
+                        {targetNodes.map((node) => ( <motion.g key={`target-${node.id}`} initial={{ opacity: 0, scale: 0 }} animate={isInView ? { opacity: 1, scale: 1 } : {}} transition={{ delay: 1 + (node.delay * 0.5), duration: 0.3 }}> <circle cx={node.x} cy={node.y} r="3" fill="#f97316" /> </motion.g> ))}
+                        <motion.g initial={{ opacity: 0, x: 20 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 2.5, duration: 0.8 }}> <text x="920" y="300" textAnchor="middle" className="fill-white text-sm font-bold">链属企业群</text> <text x="920" y="330" textAnchor="middle" className="fill-white text-3xl font-black">129家</text> </motion.g>
+                        </svg>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Compact Bubble Chart ---
+        const BubbleChartBlock = () => {
+            const [step, setStep] = useState(0);
+            const containerRef = useRef(null);
+            const isInView = useInView(containerRef, { once: false, margin: "-100px" });
+            
+            // Auto-cycle steps only when in view
+            useEffect(() => {
+                if (!isInView) return;
+                const interval = setInterval(() => {
+                    setStep(prev => (prev + 1) % 3);
+                }, 4000);
+                return () => clearInterval(interval);
+            }, [isInView]);
+
+            const generateData = () => {
+                const data = [];
+                let idCounter = 0;
+                const years = [ { year: 2020, count: 40 }, { year: 2021, count: 60 }, { year: 2022, count: 70 }, { year: 2023, count: 90 }, { year: 2024, count: 110 } ];
+                years.forEach(({year, count}) => {
+                    for (let i = 0; i < count; i++) {
+                        const rand = Math.random();
+                        let type;
+                        if (year <= 2021) { if (rand < 0.75) type = 'Yunxin Service'; else if (rand < 0.95) type = 'Factoring Service'; else type = 'Scenario Digital'; } else { if (rand < 0.88) type = 'Yunxin Service'; else if (rand < 0.93) type = 'Factoring Service'; else type = 'Scenario Digital'; }
+                        const sizeBase = type === 'Yunxin Service' ? 4 : 5; 
+                        data.push({ id: idCounter++, year: year, type: type, radius: Math.random() * 2.5 + sizeBase });
+                    }
+                });
+                return data.sort((a,b) => a.year - b.year);
+            };
+            const rawData = useMemo(() => generateData(), []);
+            
+            const WIDTH = 800; const HEIGHT = 400; const MARGIN = { top: 50, right: 30, bottom: 50, left: 30 };
+            const BUSINESS_COLORS = { 'Yunxin Service': '#3b82f6', 'Factoring Service': '#a855f7', 'Scenario Digital': '#10b981' };
+            const TYPE_PRIORITY = { 'Yunxin Service': 0, 'Factoring Service': 1, 'Scenario Digital': 2 };
+            
+            const svgRef = useRef(null);
+            const simulationRef = useRef(null);
+            
+            const xScale = useMemo(() => d3.scaleLinear().domain([2020, 2024]).range([MARGIN.left + 50, WIDTH - MARGIN.right - 50]), []);
+            const barPositions = useMemo(() => {
+                const positions = {}; const cols = 6; const spacing = 13;
+                const byYear = d3.group(rawData, d => d.year);
+                byYear.forEach((values, year) => {
+                    values.sort((a, b) => TYPE_PRIORITY[a.type] - TYPE_PRIORITY[b.type]);
+                    values.forEach((d, i) => {
+                        const col = i % cols; const row = Math.floor(i / cols);
+                        positions[d.id] = { x: xScale(year) + (col - cols/2 + 0.5) * spacing, y: HEIGHT - MARGIN.bottom - row * spacing };
+                    });
+                });
+                return positions;
+            }, [rawData, xScale]);
+
+            useEffect(() => {
+                if (!svgRef.current) return;
+                const svg = d3.select(svgRef.current);
+                if (!simulationRef.current) {
+                    const nodes = rawData.map(d => ({ ...d }));
+                    simulationRef.current = d3.forceSimulation(nodes).velocityDecay(0.2).force('charge', d3.forceManyBody().strength(-5)).force('collide', d3.forceCollide().radius(d => d.radius + 1.5).strength(1)).on('tick', () => svg.selectAll('circle').attr('cx', d => d.x).attr('cy', d => d.y));
+                    svg.selectAll('circle').data(nodes).join('circle').attr('r', d => d.radius).attr('fill', d => BUSINESS_COLORS[d.type]).attr('opacity', 0.9).attr('stroke', '#0f172a').attr('stroke-width', 1);
+                }
+                const simulation = simulationRef.current;
+                simulation.alpha(1).restart();
+                if (step === 0) simulation.force('x', d3.forceX(WIDTH/2).strength(0.1)).force('y', d3.forceY(HEIGHT/2).strength(0.1)).force('collide', d3.forceCollide().radius(d => d.radius + 1.5).strength(1));
+                else if (step === 1) simulation.force('x', d3.forceX(d => xScale(d.year)).strength(0.8)).force('y', d3.forceY(HEIGHT/2).strength(0.15)).force('collide', d3.forceCollide().radius(d => d.radius + 1.5).strength(1));
+                else if (step === 2) simulation.force('x', d3.forceX(d => barPositions[d.id].x).strength(0.8)).force('y', d3.forceY(d => barPositions[d.id].y).strength(0.8)).force('collide', null);
+                
+                // Axis
+                const showAxis = (step === 1 || step === 2);
+                const gAxis = svg.select('.x-axis');
+                if (showAxis) {
+                    const axis = d3.axisBottom(xScale).ticks(5).tickFormat(d3.format("d"));
+                    gAxis.transition().duration(500).attr('opacity', 1).attr('transform', `translate(0, ${step === 2 ? HEIGHT - MARGIN.bottom + 10 : HEIGHT/2 + 80})`).call(axis);
+                    gAxis.select(".domain").attr("stroke", "#94a3b8"); gAxis.selectAll("text").attr("fill", "#fff");
+                } else { gAxis.transition().duration(500).attr('opacity', 0); }
+            }, [step, rawData, xScale, barPositions]);
+
+            const titles = ["营收生态系统", "爆发式增长", "多元业务构成"];
+
+            return (
+                <div ref={containerRef} className="w-full flex flex-col items-center">
+                    <h3 className="text-white text-xl font-bold mb-4">{titles[step]}</h3>
+                    <div className="w-full h-[400px] relative bg-slate-900/30 rounded-xl border border-slate-700/50">
+                        <svg ref={svgRef} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full h-full overflow-visible"><g className="x-axis" opacity="0" /></svg>
+                    </div>
+                    <div className="flex space-x-2 mt-4">
+                        {[0, 1, 2].map(i => (
+                            <div key={i} onClick={(e) => { e.stopPropagation(); setStep(i); }} className={`h-1.5 rounded-full cursor-pointer transition-all ${step === i ? 'w-8 bg-blue-500' : 'w-2 bg-slate-600'}`} />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const SummarySection = () => {
+             const headerStats = [ { id: 1, topText: "2024年服务", number: 6601, bottomText: "核心企业" }, { id: 2, topText: "平台累计拥有", number: 556588, bottomText: "注册用户" }, { id: 3, topText: "以及链接了", number: 3574, bottomText: "合作银行" } ];
+            return (
+                <div id="section-platform" className="w-full py-10 border-t border-gray-800">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                        {headerStats.map((stat) => ( <StatColumn key={stat.id} topText={stat.topText} number={stat.number} bottomText={stat.bottomText} /> ))}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <RefreshWrapper title="点击重播">
+                            <SupplyChainVisualization />
+                        </RefreshWrapper>
+                        
+                        <div className="space-y-8">
+                            <RefreshWrapper title="点击重播">
+                                <h3 className="text-white text-center font-bold mb-2">业务增长地图</h3>
+                                <MapVisualization />
+                            </RefreshWrapper>
+                        </div>
+                    </div>
+
+                    <div className="mt-16 max-w-4xl mx-auto">
+                        <RefreshWrapper title="点击重播">
+                            <BubbleChartBlock />
+                        </RefreshWrapper>
+                    </div>
+                </div>
+            )
+        }
+
+        // --- Navigation Component ---
+        const FloatingNav = () => {
+            const [activeId, setActiveId] = useState('');
+            const sections = [
+                { id: 'section-macro', label: '市场规模' },
+                { id: 'section-platform', label: '平台能力' },
+                { id: 'section-business', label: '业务概览' },
+                { id: 'section-industry', label: '行业趋势' },
+                { id: 'section-revenue-share', label: '收入结构' },
+                { id: 'section-personnel', label: '人员结构' },
+                { id: 'section-competition', label: '竞争格局' },
+                { id: 'section-financial', label: '财务表现' },
+            ];
+
+            useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) setActiveId(entry.target.id);
+                    });
+                }, { rootMargin: '-40% 0px -40% 0px' });
+                
+                sections.forEach(s => {
+                    const el = document.getElementById(s.id);
+                    if(el) observer.observe(el);
+                });
+                return () => observer.disconnect();
+            }, []);
+
+            const scrollTo = (id) => {
+                const el = document.getElementById(id);
+                if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            return (
+                <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-3">
+                    {sections.map(s => (
+                        <div key={s.id} onClick={() => scrollTo(s.id)} className="group flex items-center justify-end cursor-pointer">
+                            <span className={`text-xs mr-3 px-2 py-1 rounded bg-black/80 backdrop-blur text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 ${activeId === s.id ? 'font-bold' : ''}`}>
+                                {s.label}
+                            </span>
+                            <div className={`w-3 h-3 rounded-full border border-white/20 transition-all duration-300 ${activeId === s.id ? 'bg-[#00e676] scale-125 border-[#00e676]' : 'bg-white/10 hover:bg-white/30'}`} />
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        function App() {
+            return (
+                <div className="w-full text-white">
+                    <SummarySection />
+                    <FloatingNav />
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('react-root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
